@@ -6,10 +6,9 @@
 
 > 3、彻底解决SQL注入、XSS等一系列安全问题
 
+<br>
 
 # 开始使用
-
-
 
 
 ```
@@ -34,6 +33,21 @@ npm run dev
 浏览器打开 http://localhost:9527.
 ```
 
+<br>
+
+
+# 打包&发布
+
+```
+构建到测试环境
+npm run build:sit
+```
+<br>
+
+```
+构建到生产环境
+npm run build:prod
+```
 <br>
 
 
