@@ -2,7 +2,7 @@
 
 <br>
 
-> 1、基于vue-cli + Element构建的后台权限框架 <br>
+> 1、基于vue-cli + Element构建的前端权限管理页 <br>
 
 > 2、node版本6.x+ , npm版本3.x+
 
