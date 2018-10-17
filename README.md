@@ -1,10 +1,16 @@
-# OS-ADMIN
+# OS-ADMIN-VUE
 
-> 1、基于vue-cli构建的后台权限框架 <br>
+<br>
 
-> 2、后端使用Spring Boot 2.0 + Shiro + Mybatis 构建的权限系统
+> 1、基于vue-cli + Element构建的后台权限框架 <br>
 
-> 3、彻底解决SQL注入、XSS等一系列安全问题
+> 2、node版本6.x+ , npm版本3.x+
+
+> 3、注：webpack使用4.x+版本，构建方式跟3.x有很大区别，建议查看官方文档
+```$xslt
+http://webpack.css88.com/
+```
+
 
 <br>
 
