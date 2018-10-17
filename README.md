@@ -6,3 +6,36 @@
 
 > 3、彻底解决SQL注入、XSS等一系列安全问题
 
+
+# 开始使用
+
+
+
+
+```
+1、克隆项目
+git clone https://github.com/asd821300801/oservice-admin-vue.git
+```
+<br>
+
+```
+2、安装依赖
+npm install
+```
+<br>
+
+```
+3、运行
+npm run dev
+```
+<br>
+
+```
+浏览器打开 http://localhost:9527.
+```
+
+<br>
+
+
+
+
