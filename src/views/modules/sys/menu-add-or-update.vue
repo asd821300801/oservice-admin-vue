@@ -57,11 +57,13 @@
                 </el-button>
               </div>
             </el-popover>
-            <el-input v-model="dataForm.icon" v-popover:iconListPopover :readonly="true" placeholder="菜单图标名称" class="icon-list__input"></el-input>
+            <el-input v-model="dataForm.icon" v-popover:iconListPopover :readonly="true" placeholder="菜单图标名称"
+                      class="icon-list__input"></el-input>
           </el-col>
           <el-col :span="2" class="icon-list__tips">
             <el-tooltip placement="top" effect="light">
-              <div slot="content">全站推荐使用SVG Sprite, 详细请参考:<a href="http://www.iconfont.cn/" target="_blank">阿里巴巴矢量图库</a>描述</div>
+              <div slot="content">全站推荐使用SVG Sprite, 详细请参考:<a href="http://www.iconfont.cn/" target="_blank">阿里巴巴矢量图库</a>描述
+              </div>
               <i class="el-icon-warning"></i>
             </el-tooltip>
           </el-col>
@@ -76,17 +78,20 @@
 </template>
 
 <script>
-  import { treeDataTranslate } from '@/utils'
+
+  import {treeDataTranslate} from '@/utils'
+  import request from "@/api/sys/menu";
   import Icon from '@/icons'
+
   export default {
     data () {
-      var validateUrl = (rule, value, callback) => {
+      let validateUrl = (rule, value, callback) => {
         if (this.dataForm.type === 1 && !/\S/.test(value)) {
           callback(new Error('菜单URL不能为空'))
         } else {
           callback()
         }
-      }
+      };
       return {
         visible: false,
         dataForm: {
@@ -104,13 +109,13 @@
         },
         dataRule: {
           name: [
-            { required: true, message: '菜单名称不能为空', trigger: 'blur' }
+            {required: true, message: '菜单名称不能为空', trigger: 'blur'}
           ],
           parentName: [
-            { required: true, message: '上级菜单不能为空', trigger: 'change' }
+            {required: true, message: '上级菜单不能为空', trigger: 'change'}
           ],
           url: [
-            { validator: validateUrl, trigger: 'blur' }
+            {validator: validateUrl, trigger: 'blur'}
           ]
         },
         menuList: [],
@@ -125,51 +130,47 @@
     },
     methods: {
       init (id) {
-        this.dataForm.id = id || 0
-        this.$http({
-          url: this.$http.adornUrl('/sys/menu/select'),
-          method: 'get',
-          params: this.$http.adornParams()
-        }).then(({ data }) => {
-          this.menuList = treeDataTranslate(data.menuList, 'menuId')
+        let _this = this;
+        _this.dataForm.id = id || 0;
+        request.selectMenu().then(data => {
+          _this.menuList = treeDataTranslate(data.menuList, 'menuId')
         }).then(() => {
-          this.visible = true
-          this.$nextTick(() => {
-            this.$refs['dataForm'].resetFields()
+          _this.visible = true;
+          _this.$nextTick(() => {
+            _this.$refs['dataForm'].resetFields()
           })
         }).then(() => {
-          if (!this.dataForm.id) {
+          if (!_this.dataForm.id) {
             // 新增
-            this.menuListTreeSetCurrentNode()
+            _this.menuListTreeSetCurrentNode()
           } else {
             // 修改
-            this.$http({
-              url: this.$http.adornUrl(`/sys/menu/info/${this.dataForm.id}`),
-              method: 'get',
-              params: this.$http.adornParams()
-            }).then(({ data }) => {
-              this.dataForm.id = data.menu.menuId
-              this.dataForm.type = data.menu.type
-              this.dataForm.name = data.menu.name
-              this.dataForm.parentId = data.menu.parentId
-              this.dataForm.url = data.menu.url
-              this.dataForm.perms = data.menu.perms
-              this.dataForm.orderNum = data.menu.orderNum
-              this.dataForm.icon = data.menu.icon
-              this.menuListTreeSetCurrentNode()
+            request.getMenuInfo(_this.dataForm.id).then(data => {
+              _this.dataForm.id = data.menu.menuId;
+              _this.dataForm.type = data.menu.type;
+              _this.dataForm.name = data.menu.name;
+              _this.dataForm.parentId = data.menu.parentId;
+              _this.dataForm.url = data.menu.url;
+              _this.dataForm.perms = data.menu.perms;
+              _this.dataForm.orderNum = data.menu.orderNum;
+              _this.dataForm.icon = data.menu.icon;
+              _this.menuListTreeSetCurrentNode()
             })
           }
         })
+
       },
       // 菜单树选中
       menuListTreeCurrentChangeHandle (data, node) {
-        this.dataForm.parentId = data.menuId
-        this.dataForm.parentName = data.name
+        let _this = this;
+        _this.dataForm.parentId = data.menuId;
+        _this.dataForm.parentName = data.name
       },
       // 菜单树设置当前选中节点
       menuListTreeSetCurrentNode () {
-        this.$refs.menuListTree.setCurrentKey(this.dataForm.parentId)
-        this.dataForm.parentName = (this.$refs.menuListTree.getCurrentNode() || {})['name']
+        let _this = this;
+        _this.$refs.menuListTree.setCurrentKey(_this.dataForm.parentId);
+        _this.dataForm.parentName = (_this.$refs.menuListTree.getCurrentNode() || {})['name']
       },
       // 图标选中
       iconActiveHandle (iconName) {
@@ -177,34 +178,32 @@
       },
       // 表单提交
       dataFormSubmit () {
-        this.$refs['dataForm'].validate((valid) => {
+        let _this = this;
+        _this.$refs['dataForm'].validate((valid) => {
           if (valid) {
-            this.$http({
-              url: this.$http.adornUrl(`/sys/menu/${!this.dataForm.id ? 'save' : 'update'}`),
-              method: 'post',
-              data: this.$http.adornData({
-                'menuId': this.dataForm.id || undefined,
-                'type': this.dataForm.type,
-                'name': this.dataForm.name,
-                'parentId': this.dataForm.parentId,
-                'url': this.dataForm.url,
-                'perms': this.dataForm.perms,
-                'orderNum': this.dataForm.orderNum,
-                'icon': this.dataForm.icon
-              })
-            }).then(({ data }) => {
+            let params = {
+              'menuId': _this.dataForm.id || undefined,
+              'type': _this.dataForm.type,
+              'name': _this.dataForm.name,
+              'parentId': _this.dataForm.parentId,
+              'url': _this.dataForm.url,
+              'perms': _this.dataForm.perms,
+              'orderNum': _this.dataForm.orderNum,
+              'icon': _this.dataForm.icon
+            };
+            request.saveOrUpdateMenu(_this.dataForm.id, params).then(data => {
               if (data && data.code === 0) {
-                this.$message({
+                _this.$message({
                   message: '操作成功',
                   type: 'success',
                   duration: 1500,
                   onClose: () => {
-                    this.visible = false
-                    this.$emit('refreshDataList')
+                    _this.visible = false;
+                    _this.$emit('refreshDataList')
                   }
                 })
               } else {
-                this.$message.error(data.msg)
+                _this.$message.error(data.msg)
               }
             })
           }
@@ -218,7 +217,7 @@
   .mod-menu {
     .menu-list__input,
     .icon-list__input {
-       > .el-input__inner {
+      > .el-input__inner {
         cursor: pointer;
       }
     }

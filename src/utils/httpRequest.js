@@ -11,7 +11,7 @@ const http = axios.create({
   headers: {
     'Content-Type': 'application/json; charset=utf-8'
   }
-})
+});
 
 /**
  * 请求地址处理
@@ -20,30 +20,30 @@ const http = axios.create({
 http.adornUrl = (actionName) => {
   // 非生产环境 && 开启代理, 接口前缀统一使用[/proxyApi/]前缀做代理拦截!
   return process.env.BASE_API + actionName
-}
+};
 
 /**
  * 请求拦截
  */
 http.interceptors.request.use(config => {
-  config.headers['token'] = Vue.cookie.get('token') // 请求头带上token
+  config.headers['token'] = Vue.cookie.get('token'); // 请求头带上token
   return config
 }, error => {
   return Promise.reject(error)
-})
+});
 
 /**
  * 响应拦截
  */
 http.interceptors.response.use(response => {
   if (response.data && response.data.code === 401) { // 401, token失效
-    clearLoginInfo()
+    clearLoginInfo();
     router.push({ name: 'login' })
   }
   return response
 }, error => {
   return Promise.reject(error)
-})
+});
 
 
 /**
@@ -52,11 +52,11 @@ http.interceptors.response.use(response => {
  * @param {*} openDefaultParams 是否开启默认参数?
  */
 http.adornParams = (params = {}, openDefaultParams = true) => {
-  var defaults = {
+  const defaults = {
     't': new Date().getTime()
-  }
+  };
   return openDefaultParams ? merge(defaults, params) : params
-}
+};
 
 /**
  * post请求数据处理
@@ -67,11 +67,11 @@ http.adornParams = (params = {}, openDefaultParams = true) => {
  *  form: 'application/x-www-form-urlencoded; charset=utf-8'
  */
 http.adornData = (data = {}, openDefaultData = true, contentType = 'json') => {
-  var defaults = {
+  const defaults = {
     't': new Date().getTime()
-  }
-  data = openDefaultData ? merge(defaults, data) : data
+  };
+  data = openDefaultData ? merge(defaults, data) : data;
   return contentType === 'json' ? JSON.stringify(data) : qs.stringify(data)
-}
+};
 
 export default http

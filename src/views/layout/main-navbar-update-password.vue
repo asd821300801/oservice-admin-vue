@@ -3,7 +3,8 @@
     title="修改密码"
     :visible.sync="visible"
     :append-to-body="true">
-    <el-form :model="dataForm" :rules="dataRule" ref="dataForm" @keyup.enter.native="dataFormSubmit()" label-width="80px">
+    <el-form :model="dataForm" :rules="dataRule" ref="dataForm" @keyup.enter.native="dataFormSubmit()"
+             label-width="80px">
       <el-form-item label="账号">
         <span>{{ userName }}</span>
       </el-form-item>
@@ -25,16 +26,18 @@
 </template>
 
 <script>
-  import { clearLoginInfo } from '@/utils'
+  import {clearLoginInfo} from '@/utils'
+  import request from '@/api/sys/user'
+
   export default {
     data () {
-      var validateConfirmPassword = (rule, value, callback) => {
+      let validateConfirmPassword = (rule, value, callback) => {
         if (this.dataForm.newPassword !== value) {
           callback(new Error('确认密码与新密码不一致'))
         } else {
           callback()
         }
-      }
+      };
       return {
         visible: false,
         dataForm: {
@@ -44,65 +47,70 @@
         },
         dataRule: {
           password: [
-            { required: true, message: '原密码不能为空', trigger: 'blur' }
+            {required: true, message: '原密码不能为空', trigger: 'blur'}
           ],
           newPassword: [
-            { required: true, message: '新密码不能为空', trigger: 'blur' }
+            {required: true, message: '新密码不能为空', trigger: 'blur'}
           ],
           confirmPassword: [
-            { required: true, message: '确认密码不能为空', trigger: 'blur' },
-            { validator: validateConfirmPassword, trigger: 'blur' }
+            {required: true, message: '确认密码不能为空', trigger: 'blur'},
+            {validator: validateConfirmPassword, trigger: 'blur'}
           ]
         }
       }
     },
     computed: {
       userName: {
-        get () { return this.$store.state.user.name }
+        get () {
+          return this.$store.state.user.name
+        }
       },
       mainTabs: {
-        get () { return this.$store.state.common.mainTabs },
-        set (val) { this.$store.commit('common/updateMainTabs', val) }
+        get () {
+          return this.$store.state.common.mainTabs
+        },
+        set (val) {
+          this.$store.commit('common/updateMainTabs', val)
+        }
       }
     },
     methods: {
       // 初始化
       init () {
-        this.visible = true
-        this.$nextTick(() => {
-          this.$refs['dataForm'].resetFields()
+        let _this = this;
+        _this.visible = true;
+        _this.$nextTick(() => {
+          _this.$refs['dataForm'].resetFields()
         })
       },
       // 表单提交
       dataFormSubmit () {
-        this.$refs['dataForm'].validate((valid) => {
+        let _this = this;
+        _this.$refs['dataForm'].validate((valid) => {
           if (valid) {
-            this.$http({
-              url: this.$http.adornUrl('/sys/user/password'),
-              method: 'post',
-              data: this.$http.adornData({
-                'password': this.dataForm.password,
-                'newPassword': this.dataForm.newPassword
-              })
-            }).then(({ data }) => {
+            let params = {
+              'password': _this.dataForm.password,
+              'newPassword': _this.dataForm.newPassword
+            };
+            request.resetUserPassword(params).then(data => {
               if (data && data.code === 0) {
-                this.$message({
+                _this.$message({
                   message: '操作成功',
                   type: 'success',
                   duration: 1500,
                   onClose: () => {
-                    this.visible = false
-                    this.$nextTick(() => {
-                      this.mainTabs = []
-                      clearLoginInfo()
-                      this.$router.replace({ name: 'login' })
+                    _this.visible = false;
+                    _this.$nextTick(() => {
+                      _this.mainTabs = [];
+                      clearLoginInfo();
+                      _this.$router.replace({name: 'login'})
                     })
                   }
                 })
               } else {
-                this.$message.error(data.msg)
+                _this.$message.error(data.msg)
               }
-            })
+            });
           }
         })
       }

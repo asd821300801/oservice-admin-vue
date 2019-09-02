@@ -8,7 +8,8 @@
         </div>
         <div class="login-main">
           <h3 class="login-title">管理员登录</h3>
-          <el-form :model="dataForm" :rules="dataRule" ref="dataForm" @keyup.enter.native="dataFormSubmit()" status-icon>
+          <el-form :model="dataForm" :rules="dataRule" ref="dataForm" @keyup.enter.native="dataFormSubmit()"
+                   status-icon>
             <el-form-item prop="userName">
               <el-input v-model="dataForm.userName" placeholder="帐号"></el-input>
             </el-form-item>
@@ -37,7 +38,9 @@
 </template>
 
 <script>
-  import { getUUID } from '@/utils'
+  import {getUUID} from '@/utils'
+  import request from '@/api/sys'
+
   export default {
     data () {
       return {
@@ -49,13 +52,13 @@
         },
         dataRule: {
           userName: [
-            { required: true, message: '帐号不能为空', trigger: 'blur' }
+            {required: true, message: '帐号不能为空', trigger: 'blur'}
           ],
           password: [
-            { required: true, message: '密码不能为空', trigger: 'blur' }
+            {required: true, message: '密码不能为空', trigger: 'blur'}
           ],
           captcha: [
-            { required: true, message: '验证码不能为空', trigger: 'blur' }
+            {required: true, message: '验证码不能为空', trigger: 'blur'}
           ]
         },
         captchaPath: ''
@@ -67,33 +70,32 @@
     methods: {
       // 提交表单
       dataFormSubmit () {
-        this.$refs['dataForm'].validate((valid) => {
+        let _this = this;
+        _this.$refs['dataForm'].validate((valid) => {
           if (valid) {
-            this.$http({
-              url: this.$http.adornUrl('/sys/login'),
-              method: 'post',
-              data: this.$http.adornData({
-                'username': this.dataForm.userName,
-                'password': this.dataForm.password,
-                'uuid': this.dataForm.uuid,
-                'captcha': this.dataForm.captcha
-              })
-            }).then(({ data }) => {
+            let params = {
+              'username': _this.dataForm.userName,
+              'password': _this.dataForm.password,
+              'uuid': _this.dataForm.uuid,
+              'captcha': _this.dataForm.captcha
+            };
+            request.login(params).then(data => {
               if (data && data.code === 0) {
-                this.$cookie.set('token', data.token)
-                this.$router.replace({ name: 'home' })
+                _this.$cookie.set('token', data.token);
+                _this.$router.replace({name: 'home'})
               } else {
-                this.getCaptcha()
-                this.$message.error(data.msg)
+                _this.getCaptcha();
+                _this.$message.error(data.msg)
               }
-            })
+            });
           }
         })
       },
       // 获取验证码
       getCaptcha () {
-        this.dataForm.uuid = getUUID()
-        this.captchaPath = this.$http.adornUrl(`/captcha.jpg?uuid=${this.dataForm.uuid}`)
+        let _this = this;
+        _this.dataForm.uuid = getUUID();
+        _this.captchaPath = request.getCaptcha(_this.dataForm.uuid);
       }
     }
   }
@@ -140,10 +142,10 @@
       color: #fff;
     }
     .brand-info__text {
-      margin:  0 0 22px 0;
+      margin: 0 0 22px 0;
       font-size: 48px;
       font-weight: 400;
-      text-transform : uppercase;
+      text-transform: uppercase;
     }
     .brand-info__intro {
       margin: 10px 0;

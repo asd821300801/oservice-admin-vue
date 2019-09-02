@@ -22,6 +22,9 @@
 </template>
 
 <script>
+
+  import request from "@/api/sys/config";
+
   export default {
     data () {
       return {
@@ -34,30 +37,27 @@
         },
         dataRule: {
           paramKey: [
-            { required: true, message: '参数名不能为空', trigger: 'blur' }
+            {required: true, message: '参数名不能为空', trigger: 'blur'}
           ],
           paramValue: [
-            { required: true, message: '参数值不能为空', trigger: 'blur' }
+            {required: true, message: '参数值不能为空', trigger: 'blur'}
           ]
         }
       }
     },
     methods: {
       init (id) {
-        this.dataForm.id = id || 0
-        this.visible = true
-        this.$nextTick(() => {
-          this.$refs['dataForm'].resetFields()
-          if (this.dataForm.id) {
-            this.$http({
-              url: this.$http.adornUrl(`/sys/config/info/${this.dataForm.id}`),
-              method: 'get',
-              params: this.$http.adornParams()
-            }).then(({ data }) => {
+        let _this = this;
+        _this.dataForm.id = id || 0;
+        _this.visible = true;
+        _this.$nextTick(() => {
+          _this.$refs['dataForm'].resetFields();
+          if (_this.dataForm.id) {
+            request.getConfigInfo(_this.dataForm.id).then(data => {
               if (data && data.code === 0) {
-                this.dataForm.paramKey = data.config.paramKey
-                this.dataForm.paramValue = data.config.paramValue
-                this.dataForm.remark = data.config.remark
+                _this.dataForm.paramKey = data.config.paramKey;
+                _this.dataForm.paramValue = data.config.paramValue;
+                _this.dataForm.remark = data.config.remark
               }
             })
           }
@@ -65,32 +65,30 @@
       },
       // 表单提交
       dataFormSubmit () {
-        this.$refs['dataForm'].validate((valid) => {
+        let _this = this;
+        _this.$refs['dataForm'].validate((valid) => {
           if (valid) {
-            this.$http({
-              url: this.$http.adornUrl(`/sys/config/${!this.dataForm.id ? 'save' : 'update'}`),
-              method: 'post',
-              data: this.$http.adornData({
-                'id': this.dataForm.id || undefined,
-                'paramKey': this.dataForm.paramKey,
-                'paramValue': this.dataForm.paramValue,
-                'remark': this.dataForm.remark
-              })
-            }).then(({ data }) => {
+            let params = {
+              'id': _this.dataForm.id || undefined,
+              'paramKey': _this.dataForm.paramKey,
+              'paramValue': _this.dataForm.paramValue,
+              'remark': _this.dataForm.remark
+            };
+            request.saveOrUpdateConfig(_this.dataForm.id, params).then(data => {
               if (data && data.code === 0) {
                 this.$message({
                   message: '操作成功',
                   type: 'success',
                   duration: 1500,
                   onClose: () => {
-                    this.visible = false
-                    this.$emit('refreshDataList')
+                    _this.visible = false;
+                    _this.$emit('refreshDataList')
                   }
                 })
               } else {
-                this.$message.error(data.msg)
+                _this.$message.error(data.msg)
               }
-            })
+            });
           }
         })
       }

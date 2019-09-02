@@ -3,7 +3,8 @@
     title="云存储配置"
     :close-on-click-modal="false"
     :visible.sync="visible">
-    <el-form :model="dataForm" :rules="dataRule" ref="dataForm" @keyup.enter.native="dataFormSubmit()" label-width="120px">
+    <el-form :model="dataForm" :rules="dataRule" ref="dataForm" @keyup.enter.native="dataFormSubmit()"
+             label-width="120px">
       <el-form-item size="mini" label="存储类型">
         <el-radio-group v-model="dataForm.type">
           <el-radio :label="1">七牛</el-radio>
@@ -83,6 +84,9 @@
 </template>
 
 <script>
+
+  import request from '@/api/sys/oss'
+
   export default {
     data () {
       return {
@@ -93,37 +97,31 @@
     },
     methods: {
       init (id) {
-        this.visible = true
-        this.$http({
-          url: this.$http.adornUrl('/sys/oss/config'),
-          method: 'get',
-          params: this.$http.adornParams()
-        }).then(({ data }) => {
-          this.dataForm = data && data.code === 0 ? data.config : []
-        })
+        let _this = this;
+        _this.visible = true;
+        request.getOssConfig().then(data => {
+          _this.dataForm = data && data.code === 0 ? data.config : []
+        });
       },
       // 表单提交
       dataFormSubmit () {
-        this.$refs['dataForm'].validate((valid) => {
+        let _this = this;
+        _this.$refs['dataForm'].validate((valid) => {
           if (valid) {
-            this.$http({
-              url: this.$http.adornUrl('/sys/oss/saveConfig'),
-              method: 'post',
-              data: this.$http.adornData(this.dataForm)
-            }).then(({ data }) => {
+            request.saveConfig(_this.dataForm).then(data => {
               if (data && data.code === 0) {
-                this.$message({
+                _this.$message({
                   message: '操作成功',
                   type: 'success',
                   duration: 1500,
                   onClose: () => {
-                    this.visible = false
+                    _this.visible = false
                   }
                 })
               } else {
-                this.$message.error(data.msg)
+                _this.$message.error(data.msg)
               }
-            })
+            });
           }
         })
       }

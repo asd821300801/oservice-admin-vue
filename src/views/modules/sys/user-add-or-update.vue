@@ -39,17 +39,21 @@
 </template>
 
 <script>
-  import { isEmail, isMobile } from '@/utils/validate'
+  import {isEmail, isMobile} from '@/utils/validate'
+
+  import roleRequest from '@/api/sys/role'
+  import userRequest from '@/api/sys/user'
+
   export default {
     data () {
-      var validatePassword = (rule, value, callback) => {
+      let validatePassword = (rule, value, callback) => {
         if (!this.dataForm.id && !/\S/.test(value)) {
           callback(new Error('密码不能为空'))
         } else {
           callback()
         }
-      }
-      var validateComfirmPassword = (rule, value, callback) => {
+      };
+      let validateComfirmPassword = (rule, value, callback) => {
         if (!this.dataForm.id && !/\S/.test(value)) {
           callback(new Error('确认密码不能为空'))
         } else if (this.dataForm.password !== value) {
@@ -57,21 +61,21 @@
         } else {
           callback()
         }
-      }
-      var validateEmail = (rule, value, callback) => {
+      };
+      let validateEmail = (rule, value, callback) => {
         if (!isEmail(value)) {
           callback(new Error('邮箱格式错误'))
         } else {
           callback()
         }
-      }
-      var validateMobile = (rule, value, callback) => {
+      };
+      let validateMobile = (rule, value, callback) => {
         if (!isMobile(value)) {
           callback(new Error('手机号格式错误'))
         } else {
           callback()
         }
-      }
+      };
       return {
         visible: false,
         roleList: [],
@@ -88,53 +92,46 @@
         },
         dataRule: {
           userName: [
-            { required: true, message: '用户名不能为空', trigger: 'blur' }
+            {required: true, message: '用户名不能为空', trigger: 'blur'}
           ],
           password: [
-            { validator: validatePassword, trigger: 'blur' }
+            {validator: validatePassword, trigger: 'blur'}
           ],
           comfirmPassword: [
-            { validator: validateComfirmPassword, trigger: 'blur' }
+            {validator: validateComfirmPassword, trigger: 'blur'}
           ],
           email: [
-            { required: true, message: '邮箱不能为空', trigger: 'blur' },
-            { validator: validateEmail, trigger: 'blur' }
+            {required: true, message: '邮箱不能为空', trigger: 'blur'},
+            {validator: validateEmail, trigger: 'blur'}
           ],
           mobile: [
-            { required: true, message: '手机号不能为空', trigger: 'blur' },
-            { validator: validateMobile, trigger: 'blur' }
+            {required: true, message: '手机号不能为空', trigger: 'blur'},
+            {validator: validateMobile, trigger: 'blur'}
           ]
         }
       }
     },
     methods: {
       init (id) {
-        this.dataForm.id = id || 0
-        this.$http({
-          url: this.$http.adornUrl('/sys/role/select'),
-          method: 'get',
-          params: this.$http.adornParams()
-        }).then(({ data }) => {
-          this.roleList = data && data.code === 0 ? data.list : []
+        let _this = this;
+        _this.dataForm.id = id || 0;
+        roleRequest.selectRole().then(data => {
+          _this.roleList = data && data.code === 0 ? data.list : [];
         }).then(() => {
-          this.visible = true
-          this.$nextTick(() => {
-            this.$refs['dataForm'].resetFields()
+          _this.visible = true;
+          _this.$nextTick(() => {
+            _this.$refs['dataForm'].resetFields()
           })
         }).then(() => {
-          if (this.dataForm.id) {
-            this.$http({
-              url: this.$http.adornUrl(`/sys/user/info/${this.dataForm.id}`),
-              method: 'get',
-              params: this.$http.adornParams()
-            }).then(({ data }) => {
+          if (_this.dataForm.id) {
+            userRequest.getUserInfo(_this.dataForm.id).then(data => {
               if (data && data.code === 0) {
-                this.dataForm.userName = data.user.username
-                this.dataForm.salt = data.user.salt
-                this.dataForm.email = data.user.email
-                this.dataForm.mobile = data.user.mobile
-                this.dataForm.roleIdList = data.user.roleIdList
-                this.dataForm.status = data.user.status
+                _this.dataForm.userName = data.user.username;
+                _this.dataForm.salt = data.user.salt;
+                _this.dataForm.email = data.user.email;
+                _this.dataForm.mobile = data.user.mobile;
+                _this.dataForm.roleIdList = data.user.roleIdList;
+                _this.dataForm.status = data.user.status;
               }
             })
           }
@@ -142,36 +139,34 @@
       },
       // 表单提交
       dataFormSubmit () {
-        this.$refs['dataForm'].validate((valid) => {
+        let _this = this;
+        _this.$refs['dataForm'].validate((valid) => {
           if (valid) {
-            this.$http({
-              url: this.$http.adornUrl(`/sys/user/${!this.dataForm.id ? 'save' : 'update'}`),
-              method: 'post',
-              data: this.$http.adornData({
-                'userId': this.dataForm.id || undefined,
-                'username': this.dataForm.userName,
-                'password': this.dataForm.password,
-                'salt': this.dataForm.salt,
-                'email': this.dataForm.email,
-                'mobile': this.dataForm.mobile,
-                'status': this.dataForm.status,
-                'roleIdList': this.dataForm.roleIdList
-              })
-            }).then(({ data }) => {
+            let params = {
+              'userId': _this.dataForm.id || undefined,
+              'username': _this.dataForm.userName,
+              'password': _this.dataForm.password,
+              'salt': _this.dataForm.salt,
+              'email': _this.dataForm.email,
+              'mobile': _this.dataForm.mobile,
+              'status': _this.dataForm.status,
+              'roleIdList': _this.dataForm.roleIdList
+            };
+            userRequest.saveOrUpdateUser(_this.dataForm.id, params).then(data => {
               if (data && data.code === 0) {
-                this.$message({
+                _this.$message({
                   message: '操作成功',
                   type: 'success',
                   duration: 1500,
                   onClose: () => {
-                    this.visible = false
-                    this.$emit('refreshDataList')
+                    _this.visible = false;
+                    _this.$emit('refreshDataList')
                   }
                 })
               } else {
-                this.$message.error(data.msg)
+                _this.$message.error(data.msg)
               }
-            })
+            });
           }
         })
       }

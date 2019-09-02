@@ -3,7 +3,8 @@
     :title="!dataForm.id ? '新增' : '修改'"
     :close-on-click-modal="false"
     :visible.sync="visible">
-    <el-form :model="dataForm" :rules="dataRule" ref="dataForm" @keyup.enter.native="dataFormSubmit()" label-width="100px">
+    <el-form :model="dataForm" :rules="dataRule" ref="dataForm" @keyup.enter.native="dataFormSubmit()"
+             label-width="100px">
       <el-form-item label="bean名称" prop="beanName">
         <el-input v-model="dataForm.beanName" placeholder="spring bean名称, 如: testTask"></el-input>
       </el-form-item>
@@ -28,6 +29,9 @@
 </template>
 
 <script>
+
+  import request from '@/api/sys/job'
+
   export default {
     data () {
       return {
@@ -43,36 +47,33 @@
         },
         dataRule: {
           beanName: [
-            { required: true, message: '用户名不能为空', trigger: 'blur' }
+            {required: true, message: '用户名不能为空', trigger: 'blur'}
           ],
           methodName: [
-            { required: true, message: '方法名称不能为空', trigger: 'blur' }
+            {required: true, message: '方法名称不能为空', trigger: 'blur'}
           ],
           cronExpression: [
-            { required: true, message: 'cron表达式不能为空', trigger: 'blur' }
+            {required: true, message: 'cron表达式不能为空', trigger: 'blur'}
           ]
         }
       }
     },
     methods: {
       init (id) {
-        this.dataForm.id = id || 0
-        this.visible = true
-        this.$nextTick(() => {
-          this.$refs['dataForm'].resetFields()
-          if (this.dataForm.id) {
-            this.$http({
-              url: this.$http.adornUrl(`/sys/schedule/info/${this.dataForm.id}`),
-              method: 'get',
-              params: this.$http.adornParams()
-            }).then(({ data }) => {
+        let _this = this;
+        _this.dataForm.id = id || 0;
+        _this.visible = true;
+        _this.$nextTick(() => {
+          _this.$refs['dataForm'].resetFields();
+          if (_this.dataForm.id) {
+            request.getScheduleInfo(this.dataForm.id).then(data => {
               if (data && data.code === 0) {
-                this.dataForm.beanName = data.schedule.beanName
-                this.dataForm.methodName = data.schedule.methodName
-                this.dataForm.params = data.schedule.params
-                this.dataForm.cronExpression = data.schedule.cronExpression
-                this.dataForm.remark = data.schedule.remark
-                this.dataForm.status = data.schedule.status
+                _this.dataForm.beanName = data.schedule.beanName;
+                _this.dataForm.methodName = data.schedule.methodName;
+                _this.dataForm.params = data.schedule.params;
+                _this.dataForm.cronExpression = data.schedule.cronExpression;
+                _this.dataForm.remark = data.schedule.remark;
+                _this.dataForm.status = data.schedule.status;
               }
             })
           }
@@ -80,35 +81,33 @@
       },
       // 表单提交
       dataFormSubmit () {
-        this.$refs['dataForm'].validate((valid) => {
+        let _this = this;
+        _this.$refs['dataForm'].validate((valid) => {
           if (valid) {
-            this.$http({
-              url: this.$http.adornUrl(`/sys/schedule/${!this.dataForm.id ? 'save' : 'update'}`),
-              method: 'post',
-              data: this.$http.adornData({
-                'jobId': this.dataForm.id || undefined,
-                'beanName': this.dataForm.beanName,
-                'methodName': this.dataForm.methodName,
-                'params': this.dataForm.params,
-                'cronExpression': this.dataForm.cronExpression,
-                'remark': this.dataForm.remark,
-                'status': !this.dataForm.id ? undefined : this.dataForm.status
-              })
-            }).then(({ data }) => {
+            let params = {
+              'jobId': _this.dataForm.id || undefined,
+              'beanName': _this.dataForm.beanName,
+              'methodName': _this.dataForm.methodName,
+              'params': _this.dataForm.params,
+              'cronExpression': _this.dataForm.cronExpression,
+              'remark': _this.dataForm.remark,
+              'status': !_this.dataForm.id ? undefined : _this.dataForm.status
+            };
+            request.saveOrUpdateSchedule(_this.dataForm.id, params).then(data => {
               if (data && data.code === 0) {
-                this.$message({
+                _this.$message({
                   message: '操作成功',
                   type: 'success',
                   duration: 1500,
                   onClose: () => {
-                    this.visible = false
-                    this.$emit('refreshDataList')
+                    _this.visible = false;
+                    _this.$emit('refreshDataList')
                   }
                 })
               } else {
-                this.$message.error(data.msg)
+                _this.$message.error(data.msg)
               }
-            })
+            });
           }
         })
       }

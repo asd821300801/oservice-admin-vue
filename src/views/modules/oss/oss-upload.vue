@@ -20,6 +20,9 @@
 </template>
 
 <script>
+
+  import request from '@/api/sys/oss'
+
   export default {
     data () {
       return {
@@ -32,38 +35,41 @@
     },
     methods: {
       init (id) {
-        this.url = this.$http.adornUrl(`/sys/oss/upload?token=${this.$cookie.get('token')}`)
-        this.visible = true
+        let _this = this;
+        _this.url = request.getUploadUrl(_this.$cookie.get('token'));
+        _this.visible = true
       },
       // 上传之前
       beforeUploadHandle (file) {
+        let _this = this;
         if (file.type !== 'image/jpg' && file.type !== 'image/jpeg' && file.type !== 'image/png' && file.type !== 'image/gif') {
-          this.$message.error('只支持jpg、png、gif格式的图片！')
+          _this.$message.error('只支持jpg、png、gif格式的图片！');
           return false
         }
-        this.num++
+        _this.num++
       },
       // 上传成功
       successHandle (response, file, fileList) {
-        this.fileList = fileList
-        this.successNum++
+        let _this = this;
+        _this.fileList = fileList;
+        _this.successNum++;
         if (response && response.code === 0) {
-          if (this.num === this.successNum) {
-            this.$confirm('操作成功, 是否继续操作?', '提示', {
+          if (_this.num === _this.successNum) {
+            _this.$confirm('操作成功, 是否继续操作?', '提示', {
               confirmButtonText: '确定',
               cancelButtonText: '取消',
               type: 'warning'
             }).catch(() => {
-              this.visible = false
+              _this.visible = false
             })
           }
         } else {
-          this.$message.error(response.msg)
+          _this.$message.error(response.msg)
         }
       },
       // 弹窗关闭时
       closeHandle () {
-        this.fileList = []
+        this.fileList = [];
         this.$emit('refreshDataList')
       }
     }

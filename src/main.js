@@ -15,15 +15,15 @@ import '@/element-ui-theme'
 import '@/assets/scss/index.scss'
 import '@/icons' // icon
 
-Vue.use(VueCookie)
-Vue.config.productionTip = false
+Vue.use(VueCookie);
+Vue.config.productionTip = false;
 
 // 挂载全局
-Vue.prototype.$http = httpRequest// ajax请求方法
-Vue.prototype.isAuth = isAuth // 权限方法
+Vue.prototype.$http = httpRequest;// ajax请求方法
+Vue.prototype.isAuth = isAuth; // 权限方法
 
 // 保存整站vuex本地储存初始状态
-window.SITE_CONFIG['storeState'] = cloneDeep(store.state)
+window.SITE_CONFIG['storeState'] = cloneDeep(store.state);
 
 /* eslint-disable no-new */
 new Vue({
@@ -32,4 +32,4 @@ new Vue({
   store,
   template: '<App/>',
   render: h => h(App)
-})
+});

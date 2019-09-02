@@ -26,12 +26,12 @@ export function isAuth(key) {
  * @param {*} pid
  */
 export function treeDataTranslate(data, id = 'id', pid = 'parentId') {
-  var res = []
-  var temp = {}
-  for (var i = 0; i < data.length; i++) {
+  let res = [];
+  let temp = {};
+  for (let i = 0; i < data.length; i++) {
     temp[data[i][id]] = data[i]
   }
-  for (var k = 0; k < data.length; k++) {
+  for (let k = 0; k < data.length; k++) {
     if (temp[data[k][pid]] && data[k][id] !== data[k][pid]) {
       if (!temp[data[k][pid]]['children']) {
         temp[data[k][pid]]['children'] = []
@@ -39,7 +39,7 @@ export function treeDataTranslate(data, id = 'id', pid = 'parentId') {
       if (!temp[data[k][pid]]['_level']) {
         temp[data[k][pid]]['_level'] = 1
       }
-      data[k]['_level'] = temp[data[k][pid]]._level + 1
+      data[k]['_level'] = temp[data[k][pid]]._level + 1;
       temp[data[k][pid]]['children'].push(data[k])
     } else {
       res.push(data[k])
@@ -52,7 +52,7 @@ export function treeDataTranslate(data, id = 'id', pid = 'parentId') {
  * 清除登录信息
  */
 export function clearLoginInfo() {
-  Vue.cookie.delete('token')
-  store.commit('resetStore')
+  Vue.cookie.delete('token');
+  store.commit('resetStore');
   router.options.isAddDynamicMenuRoutes = false
 }

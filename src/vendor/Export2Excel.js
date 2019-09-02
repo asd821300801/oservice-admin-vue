@@ -3,24 +3,24 @@ require('script-loader!file-saver');
 import XLSX from 'xlsx'
 
 function generateArray(table) {
-  var out = [];
-  var rows = table.querySelectorAll('tr');
-  var ranges = [];
-  for (var R = 0; R < rows.length; ++R) {
-    var outRow = [];
-    var row = rows[R];
-    var columns = row.querySelectorAll('td');
-    for (var C = 0; C < columns.length; ++C) {
-      var cell = columns[C];
-      var colspan = cell.getAttribute('colspan');
-      var rowspan = cell.getAttribute('rowspan');
-      var cellValue = cell.innerText;
-      if (cellValue !== "" && cellValue == +cellValue) cellValue = +cellValue;
+  let out = [];
+  let rows = table.querySelectorAll('tr');
+  let ranges = [];
+  for (let R = 0; R < rows.length; ++R) {
+    let outRow = [];
+    let row = rows[R];
+    let columns = row.querySelectorAll('td');
+    for (let C = 0; C < columns.length; ++C) {
+      let cell = columns[C];
+      let colspan = cell.getAttribute('colspan');
+      let rowspan = cell.getAttribute('rowspan');
+      let cellValue = cell.innerText;
+      if (cellValue !== "" && cellValue === +cellValue) cellValue = +cellValue;
 
       //Skip ranges
       ranges.forEach(function (range) {
         if (R >= range.s.r && R <= range.e.r && outRow.length >= range.s.c && outRow.length <= range.e.c) {
-          for (var i = 0; i <= range.e.c - range.s.c; ++i) outRow.push(null);
+          for (let i = 0; i <= range.e.c - range.s.c; ++i) outRow.push(null);
         }
       });
 
@@ -38,29 +38,28 @@ function generateArray(table) {
             c: outRow.length + colspan - 1
           }
         });
-      };
-
+      }
       //Handle Value
       outRow.push(cellValue !== "" ? cellValue : null);
 
       //Handle Colspan
       if (colspan)
-        for (var k = 0; k < colspan - 1; ++k) outRow.push(null);
+        for (let k = 0; k < colspan - 1; ++k) outRow.push(null);
     }
     out.push(outRow);
   }
   return [out, ranges];
-};
+}
 
 function datenum(v, date1904) {
   if (date1904) v += 1462;
-  var epoch = Date.parse(v);
+  let epoch = Date.parse(v);
   return (epoch - new Date(Date.UTC(1899, 11, 30))) / (24 * 60 * 60 * 1000);
 }
 
 function sheet_from_array_of_arrays(data, opts) {
-  var ws = {};
-  var range = {
+  let ws = {};
+  let range = {
     s: {
       c: 10000000,
       r: 10000000
@@ -70,17 +69,17 @@ function sheet_from_array_of_arrays(data, opts) {
       r: 0
     }
   };
-  for (var R = 0; R != data.length; ++R) {
-    for (var C = 0; C != data[R].length; ++C) {
+  for (let R = 0; R !== data.length; ++R) {
+    for (let C = 0; C !== data[R].length; ++C) {
       if (range.s.r > R) range.s.r = R;
       if (range.s.c > C) range.s.c = C;
       if (range.e.r < R) range.e.r = R;
       if (range.e.c < C) range.e.c = C;
-      var cell = {
+      let cell = {
         v: data[R][C]
       };
-      if (cell.v == null) continue;
-      var cell_ref = XLSX.utils.encode_cell({
+      if (cell.v === null) continue;
+      let cell_ref = XLSX.utils.encode_cell({
         c: C,
         r: R
       });
@@ -107,22 +106,22 @@ function Workbook() {
 }
 
 function s2ab(s) {
-  var buf = new ArrayBuffer(s.length);
-  var view = new Uint8Array(buf);
-  for (var i = 0; i != s.length; ++i) view[i] = s.charCodeAt(i) & 0xFF;
+  let buf = new ArrayBuffer(s.length);
+  let view = new Uint8Array(buf);
+  for (let i = 0; i !== s.length; ++i) view[i] = s.charCodeAt(i) & 0xFF;
   return buf;
 }
 
 export function export_table_to_excel(id) {
-  var theTable = document.getElementById(id);
-  var oo = generateArray(theTable);
-  var ranges = oo[1];
+  let theTable = document.getElementById(id);
+  let oo = generateArray(theTable);
+  let ranges = oo[1];
 
   /* original data */
-  var data = oo[0];
-  var ws_name = "SheetJS";
+  let data = oo[0];
+  let ws_name = "SheetJS";
 
-  var wb = new Workbook(),
+  let wb = new Workbook(),
     ws = sheet_from_array_of_arrays(data);
 
   /* add ranges to worksheet */
@@ -133,7 +132,7 @@ export function export_table_to_excel(id) {
   wb.SheetNames.push(ws_name);
   wb.Sheets[ws_name] = ws;
 
-  var wbout = XLSX.write(wb, {
+  let wbout = XLSX.write(wb, {
     bookType: 'xlsx',
     bookSST: false,
     type: 'binary'
@@ -145,25 +144,25 @@ export function export_table_to_excel(id) {
 }
 
 export function export_json_to_excel({
-  header,
-  data,
-  filename,
-  autoWidth = true,
-  bookType=  'xlsx'
-} = {}) {
+                                       header,
+                                       data,
+                                       filename,
+                                       autoWidth = true,
+                                       bookType = 'xlsx'
+                                     } = {}) {
   /* original data */
-  filename = filename || 'excel-list'
-  data = [...data]
+  filename = filename || 'excel-list';
+  data = [...data];
   data.unshift(header);
-  var ws_name = "SheetJS";
-  var wb = new Workbook(),
+  let ws_name = "SheetJS";
+  let wb = new Workbook(),
     ws = sheet_from_array_of_arrays(data);
 
   if (autoWidth) {
     /*设置worksheet每列的最大宽度*/
     const colWidth = data.map(row => row.map(val => {
       /*先判断是否为null/undefined*/
-      if (val == null) {
+      if (val === null) {
         return {
           'wch': 10
         };
@@ -178,7 +177,7 @@ export function export_json_to_excel({
           'wch': val.toString().length
         };
       }
-    }))
+    }));
     /*以第一行为初始值*/
     let result = colWidth[0];
     for (let i = 1; i < colWidth.length; i++) {
@@ -195,7 +194,7 @@ export function export_json_to_excel({
   wb.SheetNames.push(ws_name);
   wb.Sheets[ws_name] = ws;
 
-  var wbout = XLSX.write(wb, {
+  let wbout = XLSX.write(wb, {
     bookType: bookType,
     bookSST: false,
     type: 'binary'
