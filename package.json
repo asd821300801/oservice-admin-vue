@@ -54,7 +54,7 @@
     "showdown": "1.8.6",
     "simplemde": "1.11.2",
     "sortablejs": "1.7.0",
-    "vue": "2.5.17",
+    "vue": "3.0.0",
     "vue-cookie": "^1.1.4",
     "vue-count-to": "1.0.13",
     "vue-i18n": "7.3.2",
